@@ -1,8 +1,11 @@
 package org.example.parking.Repositories;
 
 
+import org.example.parking.Models.Dto.Response.TicketResponse;
 import org.example.parking.Models.Dto.Response.TicketSummaryResponse;
 import org.example.parking.Models.Entity.ParkingTicket;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +31,20 @@ public interface ParkingTicketRepository extends JpaRepository<ParkingTicket, Lo
     List<TicketSummaryResponse> findTicketsInDay(@Param("startOfDay") LocalDateTime startOfDay,
                                                  @Param("endOfDay") LocalDateTime endOfDay);
 
+
+    @Query("SELECT new org.example.parking.Models.Dto.Response.TicketResponse(" +
+            "t.id, v.licensePlate, z.name, t.checkInTime, t.checkOutTime) " +
+            "FROM ParkingTicket t " +
+            "JOIN t.vehicle v " +
+            "JOIN t.zone z " +
+            "WHERE (:licensePlate IS NULL OR v.licensePlate = :licensePlate) " +
+            "AND (CAST(:fromDate AS timestamp) IS NULL OR t.checkInTime >= :fromDate) " +
+            "AND (CAST(:toDate AS timestamp) IS NULL OR t.checkInTime <= :toDate)")
+    Page<TicketResponse> findTicketHistory(
+            @Param("licensePlate") String licensePlate,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
 
 }

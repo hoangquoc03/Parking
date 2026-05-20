@@ -2,6 +2,7 @@ package org.example.parking.Services;
 
 
 import org.example.parking.Models.Dto.Request.TicketRequest;
+import org.example.parking.Models.Dto.Response.PageResponse;
 import org.example.parking.Models.Dto.Response.TicketResponse;
 import org.example.parking.Models.Dto.Response.TicketSummaryResponse;
 import org.example.parking.Models.Entity.ParkingTicket;
@@ -10,8 +11,13 @@ import org.example.parking.Models.Entity.Zone;
 import org.example.parking.Repositories.ParkingTicketRepository;
 import org.example.parking.Repositories.VehicleRepository;
 import org.example.parking.Repositories.ZoneRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -107,6 +113,39 @@ public class ParkingService {
                 zone.getName(),
                 updatedTicket.getCheckInTime(),
                 updatedTicket.getCheckOutTime()
+        );
+    }
+    public PageResponse<TicketResponse> getTicketHistory(
+            String licensePlate,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            int page,
+            int size
+    ) {
+        // Xử lý an toàn chỉ số trang
+        if (page < 0) {
+            page = 0;
+        }
+
+        // Tạo cấu hình Pageable: Mặc định sắp xếp theo thời gian xe vào mới nhất (DESC)
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "checkInTime"));
+
+        // Thực hiện truy vấn lọc từ database
+        Page<TicketResponse> ticketPage = ticketRepository.findTicketHistory(
+                (licensePlate != null && !licensePlate.trim().isEmpty()) ? licensePlate : null,
+                fromDate,
+                toDate,
+                pageable
+        );
+
+        // Chuẩn hóa dữ liệu trả về thông qua lớp wrapper PageResponse
+        return new PageResponse<>(
+                ticketPage.getContent(),
+                ticketPage.getNumber(),
+                ticketPage.getSize(),
+                ticketPage.getTotalElements(),
+                ticketPage.getTotalPages(),
+                ticketPage.isLast()
         );
     }
 }
