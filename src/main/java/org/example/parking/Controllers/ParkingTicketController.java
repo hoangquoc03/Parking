@@ -4,9 +4,12 @@ package org.example.parking.Controllers;
 import org.example.parking.Models.Dto.Request.TicketRequest;
 import org.example.parking.Models.Dto.Response.ApiResponse;
 import org.example.parking.Models.Dto.Response.TicketResponse;
+import org.example.parking.Models.Dto.Response.TicketSummaryResponse;
 import org.example.parking.Services.ParkingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tickets")
@@ -41,5 +44,15 @@ public class ParkingTicketController {
             ApiResponse<TicketResponse> response = new ApiResponse<>(false, e.getMessage(), null);
             return ResponseEntity.badRequest().body(response);
         }
+    }
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<List<TicketSummaryResponse>>> getDailySummary() {
+        List<TicketSummaryResponse> summaryList = parkingService.getDailyTicketSummary();
+        ApiResponse<List<TicketSummaryResponse>> response = new ApiResponse<>(
+                true,
+                "Lấy danh sách tóm tắt vé xe trong ngày thành công",
+                summaryList
+        );
+        return ResponseEntity.ok(response);
     }
 }

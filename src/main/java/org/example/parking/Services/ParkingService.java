@@ -3,6 +3,7 @@ package org.example.parking.Services;
 
 import org.example.parking.Models.Dto.Request.TicketRequest;
 import org.example.parking.Models.Dto.Response.TicketResponse;
+import org.example.parking.Models.Dto.Response.TicketSummaryResponse;
 import org.example.parking.Models.Entity.ParkingTicket;
 import org.example.parking.Models.Entity.Vehicle;
 import org.example.parking.Models.Entity.Zone;
@@ -12,6 +13,8 @@ import org.example.parking.Repositories.ZoneRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 @Service
 public class ParkingService {
@@ -24,6 +27,15 @@ public class ParkingService {
         this.ticketRepository = ticketRepository;
         this.vehicleRepository = vehicleRepository;
         this.zoneRepository = zoneRepository;
+    }
+
+
+    public List<TicketSummaryResponse> getDailyTicketSummary() {
+        // Lấy thời điểm đầu ngày (00:00:00) và cuối ngày (23:59:59.999999999) của ngày hiện tại
+        LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
+        LocalDateTime endOfDay = LocalDateTime.now().with(LocalTime.MAX);
+
+        return ticketRepository.findTicketsInDay(startOfDay, endOfDay);
     }
 
 
